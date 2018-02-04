@@ -125,9 +125,54 @@ INNER JOIN (
 	GROUP BY sod.salesorderid
 	) c ON b.salesorderid = c.salesorderid
 
+--Variant for 12 (shorter)
+
+select SH.SalesOrderID,min(SH.SubTotal) as"A",
+sum(SD.OrderQty*SD.UnitPrice) as "B",
+sum(SD.OrderQty*P.ListPrice) as "C"
+
+
+
+from 
+SalesOrderHeader SH inner join SalesOrderDetail SD
+on SH.SalesOrderID=SD.SalesOrderID
+inner join Product P
+on SD.ProductID=P.ProductID
+
+group by 1
+
+
+
 --13
 SELECT sod.productid
 	,sum(sod.orderqty)
 FROM salesorderdetail sod
 GROUP BY sod.productid
 ORDER BY sum(sod.orderqty) DESC limit 1
+
+
+--14 (sketch)
+
+select range_min,range_max,
+sum(case when TotalValue>=range_min and
+TotalValue<=range_max then 1 else 0 end) as 'Num Orders',
+sum(case when TotalValue>=range_min and
+TotalValue<=range_max then TotalValue else 0 end) as 'Total Value'
+
+
+from
+
+(select 0 as range_min,999 as range_max
+union select 100,999
+union select 1000,9999
+union select 10000,99999)X
+
+cross join
+
+(select SalesOrderID,SubTotal+TaxAmt+Freight as 'TotalValue'
+
+from
+SalesOrderHeader)Y
+
+group by range_min,range_max
+
